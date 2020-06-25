@@ -24,6 +24,25 @@ class Frames:
     def __repr__(self):
         return self.frames
     
+    def get_number_of_atom_type_from_frame(self, frame_index, atom_label):
+        '''
+        Get total number of atoms of a particular type.
+        '''
+        num_atoms = 0
+        for atom in self.frames[frame_index]:
+            if atom_label == atom.atomic_symbol:
+                num_atoms += 1
+        if num_atoms > 0:
+            return num_atoms
+        return None
+    
+    def get_total_number_of_atoms_from_frame(self, frame_index):
+        '''
+        Get total number of atoms from a frame.
+        '''
+        return len(self.frames[frame_index])
+
+    
     @staticmethod
     def get_atoms(labels, atoms):
         '''
