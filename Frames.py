@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 
 class Atom:
     '''
@@ -11,19 +12,47 @@ class Atom:
         '''
         self.atomic_symbol = atomic_symbol
         self.position = np.array(position)
+    
+    def __repr__(self):
+        return str(self.atomic_symbol + ' ' + np.array2string(self.position).strip('[').strip(']'))
 
 class Frames:
     '''
     Main class for storing frames of molecular data. Contains I/O functions for reading and writing geometries.
     '''
-    def __init__(self, xyz_file):
-        self._xyz_file = xyz_file
-        self.header, self.labels, self.atoms = self.read_geoms(self._xyz_file)
+    def __init__(self, xyz_file, a=None, b=None, c=None):
+        self.xyz_file = xyz_file
+        self.header, self.labels, self.atoms = self.read_geoms(self.xyz_file)
         self.frames = self.get_atoms(self.labels, self.atoms)
+        # this is for if the volume is constant as in NVT simulations
+        self.cell_parameters = [[a, b, c]]
+        self.constant_volume = False
+        self.get_cell_parameters()
+
+    def get_cell_parameters(self):
+        if None in self.cell_parameters[0]:
+            self.cell_parameters = []
+            try:
+                for header in self.header:
+                    self.cell_parameters.append([float(i) for i in header.split()[1:4]])
+            except:
+                print("Couldn't read box parameters from xyz file. Make sure they are the first things in the comment line, or provide them manually")
+                sys.exit(1)
+        else:
+            self.constant_volume = True
     
-    def __repr__(self):
-        return self.frames
-    
+    def get_cell_parameters_for_frame(self, frame_index):
+        """Gets cell parameters for a particular frame as a list
+        """
+        if self.constant_volume:
+            return self.cell_parameters[0]
+        else:
+            return self.cell_parameters[frame_index]
+
+    def get_frame_volume(self, frame_index):
+        from operator import mul
+        from functools import reduce
+        return reduce(mul, self.get_cell_parameters_for_frame(frame_index), 1)
     @staticmethod
     def get_atoms(labels, atoms):
         '''
@@ -38,6 +67,7 @@ class Frames:
             for iAtom, atom_label in enumerate(frame_labels):
                 frame.append(Atom(atom_label, atoms[iFrame][iAtom]))
             frames.append(frame)
+        return frames
     
     @staticmethod
     def read_geoms(geom):
@@ -52,11 +82,11 @@ class Frames:
         with open(geom) as ifile:
             while True:
                 atomLabels__ = []
-                line = ifile.readline()
-                if line.strip().isdigit():
-                    natoms = int(line)
+                line = ifile.readline().split()
+                if line and line[0].isdigit():
+                    natoms = int(line[0])
                     title = ifile.readline()
-                    header.append(str(natoms) + '\n' + title)
+                    header.append(str(natoms) + '\n' + ' '.join(line[1:]) + title)
                     coords = np.zeros([natoms, 3], dtype="float64")
                     for x in coords:
                         line = ifile.readline().split()
