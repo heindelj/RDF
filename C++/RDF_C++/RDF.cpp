@@ -28,13 +28,17 @@ void RDF::computeRDF(std::string soluteLabel, std::string solventLabel)
 	for (int iBlock = 0; iBlock < numThreadedBlocks; iBlock++)
 	{
 		for (int iThread = 0; iThread < numThreads; iThread++)
-			threads.emplace_back([&]() {computeSingleFrameRDF(iBlock * numThreads + iThread, soluteLabel, solventLabel, m_Frames.getFrameVolume(iBlock * numThreads + iThread)); });
+			threads.emplace_back([=]() {computeSingleFrameRDF(iBlock * numThreads + iThread, soluteLabel, solventLabel, m_Frames.getFrameVolume(iBlock * numThreads + iThread)); });
 
 		for (auto& thread : threads)
 			thread.join();
 
 		threads.clear();
 	}
+
+	// finish up the ones which didn't fit in a block
+	for (int frameIndex = numThreadedBlocks * numThreads; frameIndex < m_Frames.m_Frames.size(); frameIndex++)
+		computeSingleFrameRDF(frameIndex, soluteLabel, solventLabel, m_Frames.getFrameVolume(frameIndex));
 
 	for (int iFrame = 0; iFrame < m_FrameByFrameHistogram.size(); iFrame++)
 	{
