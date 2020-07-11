@@ -14,7 +14,7 @@ class RDF:
         self.Frames = frames
         self.max_cutoff = max_cutoff
         self.bin_width = self.max_cutoff / self.nbins
-        self.frame_by_frame_histogram = np.zeros((len(self.Frames.frames), self.nbins), dtype=np.int32)
+        self.frame_by_frame_histogram = np.zeros((len(self.Frames.frames), self.nbins), dtype=np.float32)
         self.histogram = None
 
     def compute_rdf(self, solute_label, solvent_label):
@@ -56,7 +56,7 @@ class RDF:
             solute_indices = self.get_indices_of_atom_type_from_frame(frame_index, solute_label)
             if solute_label == solvent_label:
                 solvent_indices = solute_indices
-                for i, iSolute in enumerate(solute_indices):
+                for i, iSolute in enumerate(solute_indices[0:-1]):
                     for iSolvent in solvent_indices[i+1:]:
                         r = self.image_distance(self.Frames.frames[frame_index][iSolute].position \
                                                 ,self.Frames.frames[frame_index][iSolvent].position, frame_index)
@@ -101,6 +101,8 @@ class RDF:
             if abs(distance_component) <= side_length / 2:
                 return distance_component
             return side_length - abs(distance_component)
+            #return( (distance_component) * (abs(distance_component) <= side_length / 2) 
+            #+ (side_length - abs(distance_component)) * (abs(distance_component) > side_length / 2) )
 
         #should be vectorized but doesn't make any performance differece
         distance_vector = vec1 - vec2
