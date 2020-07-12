@@ -6,13 +6,17 @@
 class RDF
 {
 public:
-	RDF(Frames frames, int nbins, float maxCutoff);
+	RDF(Frames frames, int nbins, double maxCutoff);
 
 	Frames m_Frames;
 	int m_NumBins;
 	double m_MaxCutoff;
-	double m_BinWidth = m_MaxCutoff / double(m_NumBins);
-	int numThreads = 8;
+	double m_BinWidth;
+
+	// parameters
+	int numThreads = 16;
+	int numSolventAtoms;
+	int numFrames;
 
 	std::vector<double> m_Histogram;
 	std::vector<std::vector<double>> m_FrameByFrameHistogram;
@@ -22,7 +26,8 @@ public:
 private:
 	std::vector<std::thread> threads;
 	void computeSingleFrameRDF(int frameIndex, std::string soluteLabel, std::string solventLabel, double volume);
-	double imageDistance(Vec<double> vec1, Vec<double> vec2, int frameIndex);
+	double imageDistance(glm::vec3 vec1, glm::vec3 vec2, int frameIndex);
+	double smallestAbsoluteComponent(glm::vec3);
 	std::vector<int> getIndicesOfAtomTypeFromFrame(int frameIndex, std::string atomLabel);
 };
 

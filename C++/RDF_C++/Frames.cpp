@@ -3,8 +3,9 @@
 #include <sstream>
 #include <fstream>
 #include <filesystem> // exists
+#include <glm/gtx/component_wise.inl>
 
-Atom::Atom(std::string symbol, Vec<double> position) :
+Atom::Atom(std::string symbol, glm::vec3 position) :
 	m_Symbol(symbol), m_Position(position){ }
 
 // constructor which reads xyz file with cell parameters
@@ -26,19 +27,19 @@ void Frames::getHeaderInfo(std::ifstream& infile, std::string& line)
 	double alpha, beta, gamma, garbage;
 	if (iss >> numAtoms >> a >> b >> c)
 	{
-		m_CellParameters.push_back(Vec<double>(a, b, c));
+		m_CellParameters.push_back(glm::vec3(a, b, c));
 		std::getline(infile, line); // get comment line of header
 		return;
 	}
 	else if (iss >> numAtoms >> a >> b >> c >> alpha >> beta >> gamma)
 	{
-		m_CellParameters.push_back(Vec<double>(a, b, c));
+		m_CellParameters.push_back(glm::vec3(a, b, c));
 		std::getline(infile, line);
 		return;
 	}
 	else if (iss >> numAtoms >> a >> b >> c >> alpha >> beta >> gamma >> garbage)
 	{
-		m_CellParameters.push_back(Vec<double>(a, b, c));
+		m_CellParameters.push_back(glm::vec3(a, b, c));
 		std::getline(infile, line);
 		return;
 	}
@@ -48,7 +49,7 @@ void Frames::getHeaderInfo(std::ifstream& infile, std::string& line)
 		std::istringstream iss(line);
 		if (iss >> a >> b >> c)
 		{
-			m_CellParameters.push_back(Vec<double>(a, b, c));
+			m_CellParameters.push_back(glm::vec3(a, b, c));
 			return;
 		}
 	}
@@ -66,6 +67,7 @@ void Frames::getAtomsAndCell()
 	std::string line = "";
 	std::string atom_label = "";
 	std::vector<Atom> Atoms;
+	Atoms.reserve(1000);
 
 	// temporary variables
 	int numAtoms;
@@ -80,7 +82,7 @@ void Frames::getAtomsAndCell()
 		std::istringstream iss(line);
 		iss >> atom_label >> x >> y >> z;
 		if (!isInteger(atom_label))
-			Atoms.push_back(Atom(atom_label, Vec<double>(x, y, z)));
+			Atoms.push_back(Atom(atom_label, glm::vec3(x, y, z)));
 		else
 		{
 			m_Frames.push_back(Atoms);
@@ -100,6 +102,6 @@ bool Frames::isInteger(std::string& line)
 
 double Frames::getFrameVolume(int iFrame)
 {
-	return m_CellParameters[iFrame].elementProduct();
+	return glm::compMul(m_CellParameters[iFrame]);
 }
 

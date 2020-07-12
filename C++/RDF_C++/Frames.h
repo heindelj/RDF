@@ -3,17 +3,16 @@
 #include <string>
 #include <vector>
 #include "Vec.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 class Atom
 {
 public:
-	Atom(std::string symbol, Vec<double> position);
+	Atom(std::string symbol, glm::vec3 position);
 
 	const std::string m_Symbol;
-	Vec<double> m_Position;
-
-	// store possible atom pairs here so that you can avoid index-ordering dependence
-	std::vector<int> m_PairList;
+	glm::vec3 m_Position;
 };
 
 
@@ -24,7 +23,7 @@ public:
 
 	double getFrameVolume(int iFrame);
 	std::vector<std::vector<Atom>> m_Frames; // atoms for each frame
-	std::vector<Vec<double>> m_CellParameters; // cell parameters for each frame
+	std::vector<glm::vec3> m_CellParameters; // cell parameters for each frame
 private:
 	void getAtomsAndCell(); // reads xyz file to get each atom and cell parameters
 	
