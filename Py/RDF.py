@@ -75,7 +75,7 @@ class RDF:
             # renormalize bins to ideal gas probability distribution
             for bin_index in range(self.nbins):
                 self.frame_by_frame_histogram[frame_index][bin_index] /= \
-                    (4 * np.pi * (num_atoms_of_type / volume) * ((bin_index + 1) * self.bin_width )**2 * self.bin_width)
+                    (4 * np.pi * (num_atoms_of_type * (num_atoms_of_type - 1) / volume) * ((bin_index + 1) * self.bin_width )**2 * self.bin_width)
 
         except IndexError:
             print("Could not access that index. Check how many frames there really are.")
@@ -98,11 +98,14 @@ class RDF:
             Returns:
                 float: component of distance vector to nearest image
             """
-            if abs(distance_component) <= side_length / 2:
+            test_distance = side_length * 0.5
+            if abs(distance_component) <= test_distance:
                 return distance_component
-            return side_length - abs(distance_component)
-            #return( (distance_component) * (abs(distance_component) <= side_length / 2) 
-            #+ (side_length - abs(distance_component)) * (abs(distance_component) > side_length / 2) )
+            if distance_component < (-test_distance):
+                return distance_component + int(abs((distance_component - test_distance)/ side_length)) * side_length
+            if distance_component > (test_distance):
+                return distance_component - int(abs((distance_component + test_distance)/ side_length)) * side_length
+            
 
         #should be vectorized but doesn't make any performance differece
         distance_vector = vec1 - vec2
@@ -111,6 +114,7 @@ class RDF:
         dy = closest_image(cell_parameters[1], distance_vector[1])
         dz = closest_image(cell_parameters[2], distance_vector[2])
         return np.sqrt(dx**2 + dy**2 + dz**2)
+        #return np.linalg.norm(vec1 - vec2)
 
     def plot(self):
         """
