@@ -11,6 +11,7 @@ import sys
 rdf_data = np.loadtxt("Py/rdf_c++_output.txt")
 ax1 = plt.figure().gca()
 ax1.plot(rdf_data[:,0], rdf_data[:,1])
+ax1.axhline(y=1.0, color='black', linestyle='-')
 plt.xlabel("Pair Distance ($\AA$)")
 plt.ylabel("g(r)")
 plt.show()
