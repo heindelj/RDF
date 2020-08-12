@@ -25,9 +25,12 @@ public:
 	void writeRDF();
 private:
 	std::vector<std::thread> threads;
+	std::vector<double> binRadii;
+
 	void computeSingleFrameRDF(int frameIndex, std::string soluteLabel, std::string solventLabel, double volume);
 	double imageDistance(glm::vec3 vec1, glm::vec3 vec2, int frameIndex);
-	double smallestAbsoluteComponent(glm::vec3);
-	std::vector<int> getIndicesOfAtomTypeFromFrame(int frameIndex, std::string atomLabel);
+	double smallestAbsoluteComponent(glm::vec3 v);
+	std::vector<int> getIndicesOfAtomTypeFromFrame(int frameIndex, std::string& atomLabel);
+	void foldImagesIntoBox();
 };
 
